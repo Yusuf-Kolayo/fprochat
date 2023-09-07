@@ -2,7 +2,7 @@
 require_once('includes/conn.php');   
 require_once('header.php');
 
-$user_id = $_SESSION['user_id'];
+$current_user_id = $_SESSION['user_id'];
 $server_host = $_SERVER['HTTP_HOST'];
 $dummy_img_url = '/assets/img/dummy_user.webp';
 ?>
@@ -35,10 +35,17 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
           color: #000; padding: 7px; width: 85%;
           float: right; border-radius: 5px;
           }
- 
-    </style>
 
-    <style>
+        .offcanvas { max-width: 70%; }
+        .fl {
+            text-align: center;
+            margin-bottom: 0px;
+            padding-right: 10px;
+            color: white;
+            padding-left: -6px;
+        }
+ 
+     
         .img_user{ border-radius: 50%; width: 30px;}
     </style>
 
@@ -61,7 +68,17 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                       <!-- DIRECT CHAT -->
                       <div class="card border-0 mb-0">
                           <div class="card-header bg-dark border border-primary text-primary">
-                                <h1 class="mb-0 h6" id="current_partner_name">... ... ... </h1>
+                               
+                                <div class="row">
+                                       <div class="col-7 col-sm-12 pl-0">
+                                           <h1 class="mb-0 h6" id="current_partner_name">... ... ... </h1> 
+                                       </div>
+                                      <div class="col-5 text-end d-sm-none">
+                                        <button class="btn btn-primary py-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                                          Friends List
+                                        </button>
+                                      </div>
+                                </div>
                           </div>
                           <div class="card-body bg-dark border border-primary text-primary pb-0">
                                     <div class="row">
@@ -70,7 +87,7 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                     <table class="table mb-0 table-dark table-hover table-bodered border-primary text-primary">
                                                     
                                                         <?php    
-                                                        $sql = "SELECT * FROM users WHERE id!='$user_id'";
+                                                        $sql = "SELECT * FROM users WHERE id!='$current_user_id'";
                                                         $result = mysqli_query($my_conn, $sql);
                                                         $num_r = mysqli_num_rows($result);
                                                         if ($num_r>0) {
@@ -103,7 +120,7 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                       </table>
                                                 </div>
                                           </div>
-                                          <div class="col-10 col-sm-9 p-1">
+                                          <div class="col-12 col-sm-9 p-1">
                                                  <form action="" method="post">
                                                         <div class="border border-primary text-primary rounded p-1" style="margin-bottom:3px; height: 301px; overflow: auto;" id="chat_board">
                                                             <img src="../assets/img/chats_dummy.jpg" style="object-fit: cover;" class="h-100 w-100 rounded" alt="">
@@ -155,6 +172,68 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
         </main>
       </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+<div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fl" id="offcanvasExampleLabel"> Friends List</h5>
+    <button type="button" class="border border-0 bg-dark" data-bs-dismiss="offcanvas" aria-label="Close">
+    <i class="fas fa-long-arrow-alt-right" style="color: #ffffff;font-size:20px;"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body p-0"> 
+              <table class="table mb-0 table-dark table-hover table-bodered border-primary text-primary" style="margin-top: 67px;border-top: 1px solid;">
+
+                                                    <!-- <tr>
+                                                         <td colspan="2" class="p-0">
+                                                           
+                                                         </td>
+                                                    </tr> -->
+                                                    <?php    
+                                                    $sql = "SELECT * FROM users WHERE id!='$current_user_id'";
+                                                    $result = mysqli_query($my_conn, $sql);
+                                                    $num_r = mysqli_num_rows($result);
+                                                    if ($num_r>0) {
+                                                        while ($row=mysqli_fetch_array($result)) {
+                                                              $first_name = $row['first_name'];  
+                                                              $user_id = $row['id'];  
+                                                              $display_pic = trim($row['display_pic']);
+                                                              if (strlen($display_pic)>0) {
+                                                                  // more condition need to check if the file exist
+                                                                  $folder = 'uploads/user_dp/';
+                                                                  $display_pic_url = $folder.$display_pic;
+                                                                  if (is_writable($display_pic_url)) {
+                                                                    $valid_pic_url = $display_pic_url;
+                                                                  } else {
+                                                                    $valid_pic_url = $dummy_img_url;
+                                                                  }
+                                                              } else {
+                                                                $valid_pic_url = $dummy_img_url;
+                                                            }
+
+                                                      echo '
+                                                              <tr onclick="select_user('.$user_id.')" class="user_item">
+                                                                  <td style="width:46px"><img src="'.$valid_pic_url.'" class="img_user" /></td>  
+                                                                  <td><label class="h6">'.$first_name.'</label></td>
+                                                              </tr>
+                                                              ';
+                                                        }
+                                                    } 
+                                                    ?>
+          </table>
+    
+  </div>
+</div>
+
+
 
     
    
