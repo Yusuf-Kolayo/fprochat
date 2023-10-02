@@ -51,7 +51,7 @@ $mail = new PHPMailer(true);
                                 //Server settings
                                 $mail->SMTPDebug = 0;                      //Enable verbose debug output
                                 $mail->isSMTP();                                            //Send using SMTP
-                                $mail->Host       = 'server273.web-hosting.com';                     //Set the SMTP server to send through
+                                $mail->Host       = '';                     //Set the SMTP server to send through
                                 $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
                                 $mail->Username   = '';                     //SMTP username
                                 $mail->Password   = '';                               //SMTP password
