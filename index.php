@@ -111,18 +111,18 @@ if (isset($_POST['btn_login'])) {
                                 <tr>
                                    <td> <label for="" class="form-label">Email</label> </td>
                                    <td> 
-                                         <input type="email" name="email" id="" value="<?php echo  $email?>" class="form-control">
+                                         <input required type="email" name="email" id="" value="<?php echo  $email?>" class="form-control">
                                   </td>
                                 </tr>
                              
                                 <tr>
                                    <td> <label for="" class="form-label">Password</label> </td>
                                    <td> 
-                                         <input type="password" name="password" id="" value="<?php echo  $password?>" class="form-control">
+                                         <input required type="password" name="password" id="" value="<?php echo  $password?>" class="form-control">
                                   </td>
                                 </tr>
                                 <tr>
-                                     <td><input class="btn btn-primary w-100" type="reset" value="Clear" /></td>
+                                     <td><input required class="btn btn-primary w-100" type="reset" value="Clear" /></td>
                                      <td> <button class="btn btn-secondary w-100" type ="submit" name="btn_login" >Submit</button></td>
                                 </tr>
                                 <tr>

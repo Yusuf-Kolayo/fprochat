@@ -1,4 +1,4 @@
-<?php   require_once('user/includes/conn.php');
+<?php   require_once('user/includes/conn.php'); 
 
 
 //Import PHPMailer classes into the global namespace
@@ -13,22 +13,8 @@ require 'vendor/autoload.php';
 
 //Create an instance; passing `true` enables exceptions
 $mail = new PHPMailer(true);
-
-echo '<pre>';
-var_dump($mail);
-echo '</pre>';
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-    <link rel="stylesheet" href="bootstrap-5.3.0/css/bootstrap.min.css">
-    <?php
-
-       if (isset($_POST['submit'])) {
+ 
+       if (isset($_POST['submit'])) {  
            $email = sanitize_var($my_conn, $_POST['email']);
 
            // check the exitence of the email in the database
@@ -41,42 +27,64 @@ echo '</pre>';
             $n_row1 = mysqli_num_rows($result);             // get the number of rows returned
 
             if ($n_row1 > 0) {
-                
-                   
-                    try {
-                        //Server settings
-                        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-                        $mail->isSMTP();                                            //Send using SMTP
-                        $mail->Host       = 'smtp.example.com';                     //Set the SMTP server to send through
-                        $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-                        $mail->Username   = 'user@example.com';                     //SMTP username
-                        $mail->Password   = 'secret';                               //SMTP password
-                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-                        $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
-                    
-                        //Recipients
-                        $mail->setFrom('from@example.com', 'Mailer');
-                        $mail->addAddress('joe@example.net', 'Joe User');     //Add a recipient
-                        $mail->addAddress('ellen@example.com');               //Name is optional
-                        $mail->addReplyTo('info@example.com', 'Information');
-                        $mail->addCC('cc@example.com');
-                        $mail->addBCC('bcc@example.com');
-                    
-                        //Attachments
-                        $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-                        $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
-                    
-                        //Content
-                        $mail->isHTML(true);                                  //Set email format to HTML
-                        $mail->Subject = 'Here is the subject';
-                        $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-                        $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
-                    
-                        $mail->send();
-                        echo 'Message has been sent';
-                    } catch (Exception $e) {
-                        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-                    }                   //Enable verbose debug output
+
+            
+                $token_check = false;
+                while ($token_check===false) {
+                    $token = rand(100001, 999999);
+                      // check if the token has not been generated before
+                    $_sqx = "SELECT id FROM otp_tokens WHERE token='$token'";
+                    $_res = mysqli_query($my_conn, $_sqx);
+                    $_nr  = (int) mysqli_num_rows($_res);
+                    if ($_nr==0) {
+                        $token_check = true;
+
+                        $timestamp = time();
+                        // save the newly generatyed token
+                        $sr = "INSERT INTO otp_tokens (token, status, email, timestamp) VALUES('$token', 'sent', '$email', '$timestamp')";
+                        $result_2 = mysqli_query($my_conn, $sr);
+                        $num_2 = mysqli_affected_rows($my_conn);
+                        if ($num_2>0) {
+                            
+
+                             try {
+                                //Server settings
+                                $mail->SMTPDebug = 0;                      //Enable verbose debug output
+                                $mail->isSMTP();                                            //Send using SMTP
+                                $mail->Host       = 'server273.web-hosting.com';                     //Set the SMTP server to send through
+                                $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+                                $mail->Username   = 'fprochat@qatru.com';                     //SMTP username
+                                $mail->Password   = 'OUP-Ia{G]C7U';                               //SMTP password
+                                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+                                $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+                            
+                                // Recipients
+                                $mail->setFrom('fprochat@qatru.com', 'FproChat');
+                                $mail->addAddress($email);     //Add a recipient
+                                $mail->addReplyTo('fprochat@qatru.com', 'FproChat');
+                            
+                                //Content
+                                $mail->isHTML(true);                                  //Set email format to HTML
+                                $mail->Subject = 'FproChat Password Reset';
+                                $mail->Body    = '<h2>Reset your password using the token below</h2><br><h1>'.$token.'</h1>';
+                                $mail->AltBody = 'Reset your password using the token: '.$token;
+                            
+                                $mail->send();
+                                $msg = 'An OTP has been sent to your mailbox, check it or your junk folders \n \n Note: the token expires in 5 minutes!';
+                                $_SESSION['rs_email'] = $email;
+
+                                echo '<script>alert("'.$msg.'"); window.location.href="validate_token.php"; </script>';
+
+                            } catch (Exception $e) {
+                                $msg =  "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+                            }       
+
+                            
+                        } 
+
+
+                    }
+                } 
                
             } else {
                 $msg = 'This email does not exist in our records';
@@ -85,13 +93,22 @@ echo '</pre>';
 
 
    ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <link rel="stylesheet" href="bootstrap-5.3.0/css/bootstrap.min.css">
+    
 </head>
-<body class="bg-dark">
+<body class="bg-dark text-white">
     <br> <br> <br>
 
     <div class="row p-5">
           <div class="mx-auto col-md-5 bg-white p-2 rounded">
-                    <h1 class="text-center border bg-dark rounded p-2 h5 mb-4 text-primary">Fpro Chat - Password Reset</h1> 
+                    <h1 class="text-center border bg-dark rounded p-2 h5 mb-4 text-primary">Email Validation</h1> 
                     <?php
                     // ($msg!='') ? '<div class="alert alert-primary">'.$msg.'</div>' : ''
                     if ($msg!='') { echo '<div class="alert alert-primary">'.$msg.'</div>'; }
@@ -99,12 +116,12 @@ echo '</pre>';
                     <form action="" method="POST" class="mb-0">
                           <table class="table table-dark table-bordered border-primary mb-0">
                                 <tr>
-                                    <td colspan="2"> <p class="mb-0 text-center"><label for="">Fill in the fields below to log in</label></p> </td>
+                                    <td colspan="2"> <p class="mb-0 text-center"><label for="">Enter your email address to proceed</label></p> </td>
                                 </tr>
                                 <tr>
                                    <td> <label for="" class="form-label">Email</label> </td>
                                    <td> 
-                                         <input type="email" name="email" id="" value="<?php echo  $email?>" class="form-control">
+                                         <input type="email" required name="email" id="" value="<?php echo  $email?>" class="form-control">
                                   </td>
                                 </tr> 
                                 <tr>

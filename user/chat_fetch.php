@@ -29,7 +29,8 @@
             $n_row = (int) mysqli_num_rows($result);   
             if ($n_row > 0) {  $data = array();
 
-                while($row = mysqli_fetch_array($result)) {
+                while($row = mysqli_fetch_array($result)) {   
+                    $msg_id = $row['id'];  
                     $msg = $row['message'];               $sender_id = $row['sender_id'];              $status = $row['status'];
                     $timestamp = $row['timestamp'];       $time = date('h:i:sa d-m-Y', $timestamp);    $msg_type = $row['msg_type'];
              
@@ -58,6 +59,9 @@
                                  '.$msg_html.' 
                                  <span class="tmcus">  <b style="font-size:12px;"> '.$last_name.'</b><br> '.$time.'</span>
                               </p>';
+                       // UPDATE MESSAGES YOU RECEIVED AD SEEN
+                       $sql = "UPDATE messages SET status='seen' WHERE id='$msg_id'";
+                       mysqli_query($my_conn, $sql);
                    }
 
 

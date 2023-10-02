@@ -70,12 +70,14 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                           <div class="card-header bg-dark border border-primary text-primary">
                                
                                 <div class="row">
-                                       <div class="col-7 col-sm-12 pl-0">
+                                       <div class="col-7 pl-0">
                                            <h1 class="mb-0 h6" id="current_partner_name">... ... ... </h1> 
                                        </div>
-                                      <div class="col-5 text-end d-sm-none">
-                                        <button class="btn btn-primary py-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
-                                          Friends List
+                                      <div class="col-5 text-end">
+                                        <button class="btn btn-primary py-0 position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                                            My Chats
+
+                                              <span id="msg_count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
                                         </button>
                                       </div>
                                 </div>
@@ -87,7 +89,7 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                     <table class="table mb-0 table-dark table-hover table-bodered border-primary text-primary">
                                                     
                                                         <?php    
-                                                        $sql = "SELECT * FROM users WHERE id!='$current_user_id'";
+                                                        $sql = "SELECT * FROM users WHERE id!='$current_user_id' ORDER BY first_name ASC";
                                                         $result = mysqli_query($my_conn, $sql);
                                                         $num_r = mysqli_num_rows($result);
                                                         if ($num_r>0) {
@@ -109,9 +111,11 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                                 }
 
                                                           echo '
-                                                                  <tr id="user_'.$user_id.'" onclick="select_user('.$user_id.')" class="user_item">
+                                                                  <tr id="" onclick="select_user('.$user_id.')" class="user_item">
                                                                       <td style="width:46px"><img src="'.$valid_pic_url.'" class="img_user" /></td>  
-                                                                      <td><label class="h6">'.$first_name.'</label></td>
+                                                                      <td><label class="h6 position-relative">'.$first_name.'
+                                                                          <span class="msg_lbl_'.$user_id.' position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                                                                      </label></td>
                                                                   </tr>
                                                                   ';
                                                             }
@@ -184,7 +188,7 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
 
 <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
   <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title fl" id="offcanvasExampleLabel"> Friends List</h5>
+    <h5 class="offcanvas-title fl" id="offcanvasExampleLabel">My Chats</h5>
     <button type="button" class="border border-0 bg-dark" data-bs-dismiss="offcanvas" aria-label="Close">
     <i class="fas fa-long-arrow-alt-right" style="color: #ffffff;font-size:20px;"></i>
     </button>
@@ -198,7 +202,7 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                          </td>
                                                     </tr> -->
                                                     <?php    
-                                                    $sql = "SELECT * FROM users WHERE id!='$current_user_id'";
+                                                    $sql = "SELECT * FROM users WHERE id!='$current_user_id' ORDER BY first_name ASC";
                                                     $result = mysqli_query($my_conn, $sql);
                                                     $num_r = mysqli_num_rows($result);
                                                     if ($num_r>0) {
@@ -222,7 +226,9 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
                                                       echo '
                                                               <tr onclick="select_user('.$user_id.')" class="user_item">
                                                                   <td style="width:46px"><img src="'.$valid_pic_url.'" class="img_user" /></td>  
-                                                                  <td><label class="h6">'.$first_name.'</label></td>
+                                                                  <td><label class="h6 position-relative">'.$first_name.'
+                                                                      <span class="msg_lbl_'.$user_id.' position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                                                                  </label></td>
                                                               </tr>
                                                               ';
                                                         }
@@ -240,166 +246,226 @@ $dummy_img_url = '/assets/img/dummy_user.webp';
 
        <script src="../bootstrap-5.3.0/js/bootstrap.bundle.min.js"></script> 
        <script src="../dist/js/jquery-3.7.0.js"></script>
+
        <script> 
 
+      //  window.addEventListener('load', ()=>{
 
+
+                // fetch chat data every seconds
+                const intV = window.setInterval(()=> {
+                  fetch_chats_data();
+                }, 1000);
+ 
+                
+            // Function to select a user and initiate message fetching interval
             function select_user(user_id) {
-                  fetch_partner(user_id);  
+                fetch_partner(user_id);
 
-                  // re-fetches the messages every 1000milliseconds = 1 sec
-                const inter_val = window.setInterval(()=>{   
-                    fetch_messages(user_id);    
+                // Set an interval to fetch messages every 1 second
+                const intervalId = window.setInterval(() => {
+                    fetch_messages(user_id);
 
-                    if (user_id!=$('#partner_id_msg').val()) {
-                      clearInterval(inter_val);
-                      // console.warn('cleared');
+                    // Check if the selected user has changed, and clear the interval if so
+                    if (user_id != $('#partner_id_msg').val()) {
+                        clearInterval(intervalId);
+                        console.warn('Interval cleared');
                     }
                     // console.warn(user_id);
-                  }, 1000);  
-             
+                }, 1000);   
+
             }
 
-  
-
-            // fetches the partner information
+            // Function to fetch partner information
             function fetch_partner(user_id) {
-                        
-                   $.ajax({
+                $.ajax({
                     type: 'GET',
                     url: "fetch_partner.php",
-                    data: {'user_id':user_id},
-                    dataType: 'json', 
-                    beforeSend: function(){   
-                      $("#chat_board").html(
-                      '<div class="text-center my-5"><img src="../assets/img/loading-1.gif" class="w-25 my-5" alt=""></div>');
-                      $('#partner_id_msg').val(user_id);   
-                      $('#partner_id_file').val(user_id);   
-                   },
-
-                    success:function(response){  
-                              // console.log(response); 
-                              $("#current_partner_name").html('<a href="profile.php?url_user_id='+user_id+'">'+response.first_name+' '+response.last_name+'</a>');
+                    data: {'user_id': user_id},
+                    dataType: 'json',
+                    beforeSend: function() {
+                        // Display loading animation while fetching
+                        $("#chat_board").html('<div class="text-center my-5"><img src="../assets/img/loading-1.gif" class="w-25 my-5" alt=""></div>');
                     },
-                    error:function(response){  
-                              //  $("#chat_board").html(
-                              //               '<div class="text-center my-5"><p class="my-5">something went wrong, please try again</p></div>'
-                              //   );
+                    success: function(response) {
+                        // Display partner's name as a link
+                        $('#partner_id_msg').val(user_id);
+                        $('#partner_id_file').val(user_id);
+                        $("#current_partner_name").html('<a href="profile.php?url_user_id=' + user_id + '">' + response.first_name + ' ' + response.last_name + '</a>');
                     },
-                 });
+                    error: function(response) {
+                        // Handle errors if any
+                    },
+                });
             }
 
 
-            // fetches the messages 
+            const msgCountSpan = document.getElementById('msg_count');
+
+            // Function to fetch partner information
+            function fetch_chats_data() {
+                $.ajax({
+                    type: 'GET',
+                    url: "fetch_chats_data.php",
+                    data: {},
+                    dataType: 'json',
+                    beforeSend: function() {
+                        // Display loading animation while fetching
+                    },
+                    success: function(response) { 
+                        var msg_count = response.msg_count;
+                        if (msg_count>0) {
+                          msgCountSpan.style.visibility = 'visible';
+                          msgCountSpan.innerHTML = msg_count;
+                        } else {
+                          msgCountSpan.style.visibility = 'hidden';
+                          msgCountSpan.innerHTML = msg_count;
+                        } 
+
+                        var msg_data = response.data; 
+                        var arr = Object.entries(msg_data); 
+
+                        arr.map((msg_data)=> { 
+                            var single_msg_data = msg_data[1];
+                            var sender = single_msg_data[0];
+                            var count  = parseInt(single_msg_data[1]);
+                            
+                            console.log(single_msg_data);
+ 
+                            var user_html_arr = Array.from(document.getElementsByClassName('msg_lbl_'+sender));
+                            user_html_arr.map((element)=>{
+                               
+                              if (count>0) {
+                                element.innerHTML = count
+                                element.style.visibility = 'visible'
+                                // element.style.display = 'initial'
+                              } else {
+                                element.innerHTML = count
+                                element.style.visibility = 'hidden'
+                                // element.style.display = 'none'
+                              } 
+                            })
+                        })
+                    },
+                    error: function(response) {
+                        // Handle errors if any
+                    },
+                });
+            }
+
+
+
+            // Function to fetch messages
             function fetch_messages(user_id) { 
-                   $.ajax({
+                $.ajax({
                     type: 'GET',
                     url: "chat_fetch.php",
-                    data: {'user_id':user_id},
+                    data: {'user_id': user_id},
                     dataType: 'text',
-                    beforeSend: function(){  
-                      // $("#chat_board").html(
-                      // '<div class="text-center my-5"><img src="../assets/img/loading-1.gif" class="w-25 my-5" alt=""></div>');
-                   },
-
-                    success:function(response){  
-
-                              $('#input_txt').prop('disabled', false);
-                              $('#btn_send_msg').prop('disabled', false); 
-
-                              $('#input_img').prop('disabled', false);
-                              $('#btn_send_file').prop('disabled', false); 
-
-                              $("#chat_board").html(
-                                          '<div class="text-center my-5"><p class="my-5">'+response+'</p></div>'
-                              );
-
-                              // console.log(response);
-
-                              var objDiv = document.getElementById("chat_board");
-                              objDiv.scrollTop = objDiv.scrollHeight;
-                            
+                    beforeSend: function() {
+                        // Perform actions before fetching
                     },
-                    error:function(response){  
-                               $("#chat_board").html(
-                                            '<div class="text-center my-5"><p class="my-5">something went wrong, please try again</p></div>'
-                                );
+                    success: function(response) {
+                        // Enable input fields and display fetched messages
+                        $('#input_txt').prop('disabled', false);
+                        $('#btn_send_msg').prop('disabled', false);
+                        $('#input_img').prop('disabled', false);
+                        $('#btn_send_file').prop('disabled', false);
+                        $("#chat_board").html('<div class="text-center my-5"><p class="my-5">' + response + '</p></div>');
+
+                        // Automatically scroll to the bottom of the chat board
+                        var objDiv = document.getElementById("chat_board");
+                        objDiv.scrollTop = objDiv.scrollHeight;
                     },
-
-
-                      
-                 });
+                    error: function(response) {
+                        // Handle errors if any
+                        $("#chat_board").html('<div class="text-center my-5"><p class="my-5">Something went wrong, please try again</p></div>');
+                    },
+                });
             }
- 
 
-            // submits and send the message to server
-            $("#form_msg").on( "submit", function(event) {
-               
-                    $.ajax({
-                      type: 'POST',
-                      url: "chat_send.php",
-                      data: new FormData(this),
-                      dataType: 'json',
-                      contentType: false,
-                      cache: false,
-                      processData:false,
-                      beforeSend: function(){ $("#input_txt").val("") },
-                      success: function(response){ //console.log(response);
-
-                          if(response.status == 'sent'){
-                            console.warn(response.message);    fetch_chat();
+            // Function to submit and send messages to the server
+            $("#form_msg").on("submit", function(event) {
+                $.ajax({
+                    type: 'POST',
+                    url: "chat_send.php",
+                    data: new FormData(this),
+                    dataType: 'json',
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    beforeSend: function() {
+                        $("#input_txt").val("");
+                    },
+                    success: function(response) {
+                        if (response.status == 'sent') {
+                            console.warn(response.message);
+                            fetch_chat();
                             var element = document.getElementById("msg_body");
-                              element.scrollTop = element.scrollHeight;
-                          } else {  console.warn(response.message);  }
-                      }
-                  });
+                            element.scrollTop = element.scrollHeight;
+                        } else {
+                            console.warn(response.message);
+                        }
+                    },
+                });
 
-
-              // prevents the page from reloading
-              event.preventDefault();
+                // Prevent the page from reloading
+                event.preventDefault();
             });
 
-
-
-
+            // Event handler for switching between text and image input
             $('#btn_img').click(function() {
-              $(this).hide();     $('#btn_txt').show();
-              $('#form_msg').hide();     $('#form_file').show();
+                $(this).hide();
+                $('#btn_txt').show();
+                $('#form_msg').hide();
+                $('#form_file').show();
             });
-
 
             $('#btn_txt').click(function() {
-              $(this).hide();     $('#btn_img').show();
-              $('#form_msg').show();     $('#form_file').hide();
+                $(this).hide();
+                $('#btn_img').show();
+                $('#form_msg').show();
+                $('#form_file').hide();
             });
 
-
-
+            // Event handler for file submission
             $('#form_file').on('submit', function(e) {
-                e.preventDefault(); 
+                e.preventDefault();
                 $.ajax({
-                        type: 'POST',
-                        url: "image_send.php",
-                        data: new FormData(this),
-                        dataType: 'json',
-                        contentType: false,
-                        cache: false,
-                        processData:false,
-                        beforeSend: function(){  $("#file_msg").val(null) },
-                        success: function(response){  console.log(response);
+                    type: 'POST',
+                    url: "image_send.php",
+                    data: new FormData(this),
+                    dataType: 'json',
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    beforeSend: function() {
+                        $("#input_img").val(null);
+                    },
+                    success: function(response) {
+                        console.log(response);
 
-                            if(response.sent == 'true'){
-                              console.warn(response.data);    fetch_messages(user_id);
-                              var element = document.getElementById("msg_body");
-                                element.scrollTop = element.scrollHeight;
-                            } else {  console.warn(response.data);  }
+                        if (response.sent == 'true') {
+                            console.warn(response.data);
+                            fetch_messages(user_id);
+                            var element = document.getElementById("msg_body");
+                            element.scrollTop = element.scrollHeight;
+                        } else {
+                            console.warn(response.data);
                         }
-                    });
-
+                    },
+                });
             });
 
 
 
-       </script>
+
+
+
+
+      //  }) 
+
+        </script>
   
 
   

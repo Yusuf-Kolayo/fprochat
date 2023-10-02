@@ -121,22 +121,22 @@ if (isset($_POST['btn_register'])) {
                                 </tr>
                                 <tr>
                                      <td><label for="" class="form-label">Firstname</label></td>   
-                                     <td> <input type="text" name="first_name" id="" value="<?php  echo $first_name?>" class="form-control"></td>
+                                     <td> <input required type="text" name="first_name" id="" value="<?php  echo $first_name?>" class="form-control"></td>
                                 </tr>
                                 <tr>
                                    <td>   <label for="" class="form-label">Lastname</label></td>
-                                   <td>  <input type="text" name="last_name" id="" value="<?php echo  $last_name?>" class="form-control"></td>
+                                   <td>  <input required type="text" name="last_name" id="" value="<?php echo  $last_name?>" class="form-control"></td>
                                 </tr>
                                 <tr>
                                    <td> <label for="" class="form-label">Email</label> </td>
                                    <td> 
-                                         <input type="email" name="email" id="" value="<?php echo  $email?>" class="form-control">
+                                         <input required type="email" name="email" id="" value="<?php echo  $email?>" class="form-control">
                                   </td>
                                 </tr>
                                 <tr>
                                        <td><label for="" class="form-label">Gender</label></td>
                                        <td> 
-                                            <select name="gender" id="" class="form-select">
+                                            <select required name="gender" id="" class="form-select">
                                                 <option value=""></option>
                                                 <option value="male">Male</option>
                                                 <option value="female">Female</option>
@@ -146,17 +146,17 @@ if (isset($_POST['btn_register'])) {
                                 <tr>
                                    <td> <label for="" class="form-label">Password</label> </td>
                                    <td> 
-                                         <input type="password" name="password" id="" value="<?php echo  $password?>" class="form-control">
+                                         <input required type="password" name="password" id="" value="<?php echo  $password?>" class="form-control">
                                   </td>
                                 </tr>
                                 <tr>
                                    <td> <label for="" class="form-label">Confirm Password</label> </td>
                                    <td> 
-                                         <input type="password" name="c_password" id="" value="<?php echo  $password?>" class="form-control">
+                                         <input required type="password" name="c_password" id="" value="<?php echo  $password?>" class="form-control">
                                   </td>
                                 </tr>
                                 <tr>
-                                     <td><input class="btn btn-primary w-100" type="reset" value="Clear" /></td>
+                                     <td><input required class="btn btn-primary w-100" type="reset" value="Clear" /></td>
                                      <td> <button class="btn btn-secondary w-100" type ="submit" name="btn_register" >Submit</button></td>
                                 </tr>
                           </table>
